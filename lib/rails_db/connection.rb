@@ -1,9 +1,8 @@
 module RailsDb
   module Connection
-
     def connection
-      ActiveRecord::Base.connection
       ActiveRecord::Base.connection.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY")
+      ActiveRecord::Base.connection
     rescue ActiveRecord::ConnectionNotEstablished
       ActiveRecord::Base.establish_connection(Rails.application.config.database_configuration[Rails.env]).connection
     end
@@ -13,7 +12,7 @@ module RailsDb
     end
 
     def column_properties
-      %w(name sql_type null limit precision scale type default)
+      %w[name sql_type null limit precision scale type default]
     end
 
     def to_param
@@ -23,6 +22,5 @@ module RailsDb
     def column_names
       columns.collect(&:name)
     end
-
   end
 end

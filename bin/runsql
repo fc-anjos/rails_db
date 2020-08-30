@@ -5,12 +5,12 @@ require 'erb'
 require 'yaml'
 require 'terminal-table'
 
-require_relative "../lib/rails_db"
+require_relative '../lib/rails_db'
 
 debug = false
 
-ENGINE_ROOT = File.expand_path('../..', __FILE__)
-ENGINE_PATH = File.expand_path('../../lib/rails_db/engine', __FILE__)
+ENGINE_ROOT = File.expand_path('..', __dir__)
+ENGINE_PATH = File.expand_path('../lib/rails_db/engine', __dir__)
 
 require "#{ENGINE_ROOT}/lib/ext/string_ext"
 
@@ -21,19 +21,16 @@ db_conf   = YAML.load(ERB.new(File.open(database_yml).read).result) || {}
 env       = ENV['RAILS_ENV'] || ENV['ENV'] || 'development'
 db_env    = db_conf[env]
 
-if db_env['adapter'] == 'sqlite3'
-  db_env['database'] = "#{app_path}/#{db_env['database']}"
-end
+db_env['database'] = "#{app_path}/#{db_env['database']}" if db_env['adapter'] == 'sqlite3'
 
-if debug
-  puts "ENV: #{db_env.inspect}"
-end
+puts "ENV: #{db_env.inspect}" if debug
 
-ActiveRecord::Base.establish_connection(db_env)
+# ActiveRecord::Base.establish_connection(db_env)
+# ActiveRecord::Base.connection.execute("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY")
 
 RailsDb.use_default_configuration!
 
-sql = "#{ARGV[0]}".strip
+sql = (ARGV[0]).to_s.strip
 puts "Executing: #{sql}".red
 
 sql_query = RailsDb::SqlQuery.new(sql).execute
