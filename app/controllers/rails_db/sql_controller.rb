@@ -1,9 +1,8 @@
 module RailsDb
   class SqlController < RailsDb::ApplicationController
-    before_action :load_query, only: [:index, :execute, :csv, :xls]
+    before_action :load_query, only: %i[index execute csv xls]
 
-    def index
-    end
+    def index; end
 
     def execute
       render :index
@@ -17,8 +16,7 @@ module RailsDb
       render xlsx: 'xls', filename: 'results.xlsx'
     end
 
-    def import
-    end
+    def import; end
 
     def import_start
       @importer = SqlImport.new(params[:file])
@@ -34,9 +32,10 @@ module RailsDb
     private
 
     def load_query
-      @sql       = "#{params[:sql]}".strip
+      @sql = params[:sql].to_s.strip
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
       @sql_query = RailsDb::SqlQuery.new(@sql).execute
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE')
     end
-
   end
 end
