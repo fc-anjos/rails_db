@@ -19,8 +19,10 @@ module RailsDb
     def import; end
 
     def import_start
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
       @importer = SqlImport.new(params[:file])
-      result    = @importer.import
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE')
+      result = @importer.import
       if result.ok?
         flash[:notice] = 'File was successfully imported'
       else
@@ -33,7 +35,6 @@ module RailsDb
 
     def load_query
       @sql = params[:sql].to_s.strip
-      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
       @sql_query = RailsDb::SqlQuery.new(@sql).execute
       ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE')
     end

@@ -4,6 +4,8 @@ module RailsDb
     helper_method :per_page
 
     before_action :verify_access
+    before_action :lock
+    after_action :unlock
 
     if RailsDb.http_basic_authentication_enabled
       http_basic_authenticate_with name: RailsDb.http_basic_authentication_user_name,
@@ -21,6 +23,12 @@ module RailsDb
       params[:per_page] || session[:per_page]
     end
 
+    def lock
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
+    end
+
+    def unlock
+      ActiveRecord::Base.connection.execute('SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY')
+    end
   end
 end
-
